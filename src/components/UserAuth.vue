@@ -1,7 +1,39 @@
 <script setup>
+import { reactive } from "vue";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import router from "@/router";
+const formData = reactive({
+  email: "",
+  username: "",
+  password: "",
+});
+
+const handleSignup = () => {
+  axios
+    .post("http://127.0.0.1:8000/auth/users/", formData)
+    .then((response) => console.log(response))
+    .catch((error) => console.error(error));
+};
+
+const handleLogin = () => {
+  const credentials = {
+    username: formData.username,
+    password: formData.password,
+  };
+
+  axios
+    .post("http://127.0.0.1:8000/auth/token/login/", credentials)
+    .then((response) => {
+      sessionStorage.setItem("authToken", response.data.auth_token);
+      sessionStorage.setItem("username", formData.username);
+      router.push("/chats");
+    })
+    .catch((error) => console.error(error));
+};
 </script>
 
 <template>
@@ -11,7 +43,7 @@ import { Label } from "@/components/ui/label";
     </h1>
 
     <div class="flex flex-col items-center justify-center min-h-screen">
-      <Tabs default-value="account" class="w-[400px]">
+      <Tabs default-value="signup" class="w-[400px]">
         <TabsList>
           <TabsTrigger value="signup"> Sign up </TabsTrigger>
           <TabsTrigger value="login"> Log In </TabsTrigger>
@@ -23,7 +55,7 @@ import { Label } from "@/components/ui/label";
               id="email"
               type="email"
               placeholder="Email"
-              v-model="email"
+              v-model="formData.email"
             />
           </div>
           <div class="grid w-full max-w-sm items-center gap-1.5 mb-2">
@@ -32,7 +64,7 @@ import { Label } from "@/components/ui/label";
               id="username"
               type="text"
               placeholder="Username"
-              v-model="username"
+              v-model="formData.username"
             />
           </div>
           <div class="grid w-full max-w-sm items-center gap-1.5">
@@ -41,18 +73,24 @@ import { Label } from "@/components/ui/label";
               id="password"
               type="password"
               placeholder="Password"
-              v-model="password"
+              v-model="formData.password"
             />
+          </div>
+
+          <div>
+            <Button class="w-full mt-4 item-center" @click="handleSignup"
+              >Signup</Button
+            >
           </div>
         </TabsContent>
         <TabsContent value="login">
           <div class="grid w-full max-w-sm items-center gap-1.5 mb-2">
-            <Label for="email">Email</Label>
+            <Label for="username">Username</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="Email"
-              v-model="email"
+              id="username"
+              type="username"
+              placeholder="Username"
+              v-model="formData.username"
             />
           </div>
           <div class="grid w-full max-w-sm items-center gap-1.5">
@@ -61,8 +99,13 @@ import { Label } from "@/components/ui/label";
               id="password"
               type="password"
               placeholder="Password"
-              v-model="password"
+              v-model="formData.password"
             />
+          </div>
+          <div>
+            <Button class="w-full mt-4 item-center" @click="handleLogin"
+              >Login</Button
+            >
           </div>
         </TabsContent>
       </Tabs>
